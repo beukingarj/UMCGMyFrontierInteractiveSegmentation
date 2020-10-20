@@ -1,0 +1,19 @@
+//----------------------------------------------------------------------------------
+//! MyFrontierInteractiveSegmentation module definition
+/*!
+// \file    MyFrontierInteractiveSegmentation.def
+// \author  Jorn
+// \date    2019-05-21
+*/
+//----------------------------------------------------------------------------------
+
+
+MacroModule MyFrontierInteractiveSegmentation {
+  genre              = ""
+  author             = "Jorn"
+  comment            = ""
+  keywords           = ""
+  seeAlso            = ""
+   
+  externalDefinition = "$(LOCAL)/MyFrontierInteractiveSegmentation.script"
+}

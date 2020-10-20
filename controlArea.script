@@ -1,0 +1,488 @@
+// **InsertLicense** code
+//----------------------------------------------------------------------------------
+//! Macro module MyFrontierMultiViewerControlArea
+/*!
+// \file    MyFrontierMultiViewerControlArea.script
+*/
+//----------------------------------------------------------------------------------
+
+//scriptOnly = Yes
+
+Interface  {
+  Inputs {}
+  Outputs {}
+  Parameters {
+    
+    Field closePrototype { type = trigger }
+    Field RegOn { type = Bool }
+    Field ContourOn { type = Bool }
+    //Field CrossHairBool { internalName = parent:SoView2DPosition.drawingOn}      
+    Field ReferenceSeries {internalName = parent:DirectDicomImport.volumeInfos}
+    Field OverlaySeries {internalName = parent:DirectDicomImport.volumeInfos}
+    Field RTSTRUCTSeries {internalName = parent:DirectDicomImport.volumeInfos}
+    Field Start {type = Bool }
+    
+    Field DelMethod { type = Enum
+      items {
+        item Arrow {
+          title = "Arrow"
+        }
+        item Spline {
+          title = "Spline"
+        }
+        //item IsoRect {
+        //  title = "Iso Rectangle"
+        //}
+        item Iso {
+          title = "Iso"
+        }
+        item Draw {
+          title = "Draw"
+        }
+        item Erase {
+          title = "Erase"
+        }
+        item DrawErase {
+          title = "Draw and Erase"
+        }
+      }
+    }
+    
+    Field generateIso {type = Trigger}
+    
+    Field createItem { type = Bool }
+    Field alphaFactor { type = Float min =0 max = 1 }
+    Field groupDisplayTree { type = String }
+    Field numGroups { type = Int }
+    
+    Field ignoreGroupListViewSelectionChanged { type = Bool }
+    Field numSelectedGroups { type = Int }
+    Field ignoreGroupSelectionChanged { type = Bool }
+    Field groupSelectedItems { type = String }
+    Field csoTabSelected { type = Bool }
+    Field groupTabSelected { type = Bool }
+    Field selectionTabSelected { type = Bool }
+    Field notificationTabSelected { type = Bool }
+    Field defaultTabSelected { type = Bool }
+    Field selectResultFolder { type = Trigger}
+    Field ImageSave { type = Trigger}
+    Field drawSize { type = Float min =0 max = 50 } 
+    Field CalculateIsoRect { type = Trigger}
+    
+    Field PercUB {type = Float}
+    Field PercLB {type = Float}    
+    
+    Field ActiveScreen { type = Enum
+      items {
+        item Screen1 {
+          title = "Reference"
+        }
+        item Screen2 {
+          title = "Overlay"
+        }
+      }
+    }
+    Field IsoMode { type = Enum
+      items {
+        item Mode1 {
+          title = "Whole image"
+        }
+        item Mode2 {
+          title = "Rectangle mode"
+        }
+        item Mode3 {
+          title = "Delineation mode"
+        }
+      }
+    }
+    Field filename { type = String }
+    Field patientBrowser { type = trigger }
+    Field Import {type = Trigger}
+    
+    Field RadiomicsString {type = String values = ''}
+    Field RadiomicsShape {type = Bool}
+    Field RadiomicsFirstOrder {type = Bool}
+    Field RadiomicsGLCM {type = Bool}
+    Field RadiomicsGLRLM {type = Bool}
+    Field RadiomicsGLSZM {type = Bool}
+    Field RadiomicsNGTDM {type = Bool}
+    Field RadiomicsOriginal {type = Bool}
+    Field RadiomicsWavelet {type = Bool}
+    
+    Field RadiomicSave {type = Bool}
+    Field StartVoxelBased {type = Bool}
+    
+    Field binWidth {type = Float value = 0.5}
+    Field resampledPixelSpacing {type = Vector3 values = [2,2,2]}
+  }
+}
+
+
+
+
+
+Commands {
+  source = $(MLAB_MMS_Syngo)/Modules/Macros/FrontierStyle/FrontierStyle.py
+  source = $(LOCAL)/controlArea.py
+  
+}
+
+Window {
+  style         = FrontierStyle
+  wakeupCommand = wakeup
+
+  Vertical {
+    margin  = 3
+    expandY = No
+    name    = frontierTopVertical
+    Vertical {
+      name = frontierTitleVertical
+      Label {
+        name  = frontierTitleLabel
+        title = "Segmentation and Registration Tool"        
+      }
+    }
+        
+    Button patientBrowser {}
+    Button closePrototype {}
+    
+    
+    Box "Timepoints" {
+      //Field parent:SoOrthoView2D1.layoutMode { title = "Layout:"}
+      
+      Table {
+        Row {
+          Field parent:SoOrthoView2D1.timePoint {title = "Reference: "}
+          Field parent:SoOrthoView2D2.timePoint {title = "Overlay: "}
+        }
+        Row {
+          Field alphaFactor {title = "Alpha:" slider = True editField = False}
+        }
+      }
+    }
+    
+    //Box "Overlay series" {
+    //  //Field parent:SoOrthoView2D2.layoutMode { title = "Layout:"}
+    //  Field parent:SoOrthoView2D2.timePoint {title = "Timepoint: "}
+    //  Field alphaFactor {title = "Alpha:" slider = True editField = False}
+    //}
+    //Button parent:SoView2DPosition.drawingOn { 
+    //  expandX       = No
+    //  title = ""
+    //  activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/cross.png
+    //}
+    //Table {
+    //  Row {
+    //    Button parent:SoView2DPosition.drawingOn { 
+    //      //expandX       = No
+    //      activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/cross.png
+    //    }
+    //  }
+    //}
+    Empty { h = 20 }
+    TabView {
+      height = 400
+      TabViewItem Import {
+        Empty { h = 20 }
+        Box "Reference series" {
+          ListView ReferenceSeries {
+            panelName               = "VolumeListView"
+            name                    = volumeListView1
+            style                   = monospacedListViewSmall
+            expandX                 = Yes
+            visibleRows             = 2
+            sortByColumn            = 0
+            selectionChangedCommand = updateListViewSelection1
+            //doubleClickedCommand    = showDetailsView
+            richText                = Yes
+            //contextMenu {
+            //  MenuItem "Show Details" {
+            //    command = showDetailsView
+            //  }
+            //}
+          }
+        }
+        Empty { h = 0 }
+        Box "Overlay series" {
+          ListView OverlaySeries {
+            panelName               = "VolumeListView"
+            name                    = volumeListView2
+            style                   = monospacedListViewSmall
+            expandX                 = Yes
+            visibleRows             = 2
+            sortByColumn            = 0
+            selectionChangedCommand = updateListViewSelection2
+            //doubleClickedCommand    = showDetailsView
+            richText                = Yes
+            //contextMenu {
+            //  MenuItem "Show Details" {
+            //    command = showDetailsView
+            //  }
+            //}
+          }
+        }      
+        Empty { h = 0 }
+        Box "RTSTRUCT series" {
+          ListView RTSTRUCTSeries {
+            panelName               = "VolumeListView"
+            name                    = volumeListView3
+            style                   = monospacedListViewSmall
+            expandX                 = Yes
+            visibleRows             = 2
+            sortByColumn            = 0
+            selectionChangedCommand = updateListViewSelection3
+            //doubleClickedCommand    = showDetailsView
+            richText                = Yes
+            //contextMenu {
+            //  MenuItem "Show Details" {
+            //    command = showDetailsView
+            //  }
+            //}
+          }
+        }
+        Button Import {title = "Import NIFTI"}
+      }
+      
+      
+      TabViewItem Registration {
+        tabSelectedCommand   = RegOn
+        tabDeselectedCommand = RegOff
+        Button parent:SoView2DRigidRegistrationEditor.reset { title = "Reset registration" }
+      }
+      TabViewItem Delineation {
+        Empty { h = 10 }
+        tabSelectedCommand   = ContourOn
+        tabDeselectedCommand = ContourOff
+        
+        PushButtonGroup DelMethod {
+          showIconsOnly      = True
+          exclusiveButtons   = True
+          equalButtonWidths  = True
+          equalButtonHeights = True
+          spacing            = 0
+          
+          items {
+            item Arrow {
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/mouse.png
+            }
+            item Spline {
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/spline.png
+            }
+            //item IsoRect { 
+            //  activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/rect.png
+            //}
+            item Iso { 
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/iso1.png
+            }
+          }
+        }
+        PushButtonGroup DelMethod {
+          showIconsOnly      = True
+          exclusiveButtons   = True
+          equalButtonWidths  = True
+          equalButtonHeights = True
+          spacing            = 0
+          
+          items {
+            item Draw {
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/pencil.png
+            }
+            item Erase {
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/erase.png
+            }
+            item DrawErase {
+              activeOnImage = $(MLAB_Example_General)/Configuration/Installers/MyFrontierSimpleViewer/DrawErase1.png
+            }
+          }
+        }
+
+        //Table{
+        //  visibleOn = "* DelMethod == "IsoRect" *"
+        //  Row {
+        //    IntervalSlider {
+        //      expandX    = yes
+        //      lowerField = parent:IntervalThreshold.threshMin
+        //      upperField = parent:IntervalThreshold.threshMax
+        //      colspan    = 4
+        //    }
+        //  }
+        //  Row {
+        //    Label {title = "Lower bound: "}
+        //    Field parent:IntervalThreshold.threshMin {title = "GV"}
+        //    Field parent:SyncFloat.float1 {title = "%" }
+        //  }
+        //  Row {
+        //    Label {title = "Upper bound: "}
+        //    Field parent:IntervalThreshold.threshMax {title = "GV"}
+        //    Field parent:SyncFloat1.float1 {title = "%" }
+        //  }
+        //}
+        //Button CalculateIsoRect {title = "Calculate contour" visibleOn = "* DelMethod == "IsoRect" *" expandX = True}
+        
+        //Table {
+        //  visibleOn = "* DelMethod == "Iso" *"
+        //  Row {
+        //    IntervalSlider {
+        //      expandX    = yes
+        //      lowerField = parent:IntervalThreshold1.threshMin
+        //      upperField = parent:IntervalThreshold1.threshMax
+        //      colspan    = 4
+        //    }
+        //  }
+        //  Row {
+        //    Label {title = "Lower bound: "}
+        //    Field parent:IntervalThreshold1.threshMin {title = "GV"}
+        //    Field parent:SyncFloat2.float1 {title = "%" }
+        //  }
+        //  Row {
+        //    Label {title = "Upper bound: "}
+        //    Field parent:IntervalThreshold1.threshMax {title = "GV"}
+        //    Field parent:SyncFloat3.float1 {title = "%" }
+        //  }
+        //  Row {
+        //    Field ActiveScreen {title = "" expandX = True}
+        //    Button generateIso {title = "Generate Iso" expandX = True}
+        //  }
+        //}
+        
+        
+        
+        Table { //test
+          visibleOn = "* DelMethod == "Iso" *"
+          Row {
+            Field IsoMode {title = ""}
+            Field ActiveScreen {title = ""}
+          }
+          Row {
+            IntervalSlider {
+              lowerField = parent:IntervalThreshold.threshMin
+              upperField = parent:IntervalThreshold.threshMax
+              colspan    = 2
+            }
+          }
+          Row {
+            //Label {title = "Lower bound: "}
+            Field parent:IntervalThreshold.threshMin {title = "LB "}
+            Field PercLB {title = "%"}
+          }
+          Row {
+            //Label {title = "Upper bound: "}
+            Field parent:IntervalThreshold.threshMax {title = "UB "}
+            Field PercUB {title = "%"}
+          }
+          Row {
+            Field parent:FilterConnectedComponents.selectionMode {title = "" }
+            Button CalculateIsoRect {title = "Generate Iso"}
+          }
+        }
+        
+
+        
+        Field drawSize {title = "Draw size: " slider = True visibleOn = "* DelMethod == /(Draw|Erase|DrawErase)/ *" expandX = True}
+        
+        
+        //Table{
+        //  visibleOn = "* DelMethod == /(Draw|Erase|DrawErase)/ *"
+        //  Row {
+        //    Field drawSize {title = "Draw size: " slider = True }
+        //  }
+        //}
+        
+        Empty {h=10}          
+        Box {
+          name = groupBox
+            
+          ListView {
+            name                    = groupListView
+            //dependsOn               = numGroups
+            sortByColumn            = 1
+            selectionMode           = extended
+            selectionChangedCommand = groupListViewSelectionChanged
+            checkListItemChangedCommand = groupListViewCheckChanged
+            values                  = "@Id@Label"
+            visibleRows             = 5
+            //w                       = 150
+            expandY                 = YES
+            updateDelay             = 1
+          }
+          FieldListener parent:CSOManager.groupDisplayTree { command = updateGroupListView   }
+          FieldListener parent:CSOManager.groupSelectedItems { command = updateGroupListViewSelection }      
+          
+          Table {
+            Row {
+              Button createItem { title = "Create contour" expandX = Yes colspan = 1}
+              Button parent:CSOManager.groupRemoveSelected { title = "Remove total contour" expandX = Yes tooltip = "Shortkey = SHIFT+CONTROL+DELETE" colspan = 1}
+            }
+            Row {
+              Button parent:CSOManager.csoRemoveSelected { title = "Remove contour on current slice" expandX = Yes tooltip = "Shortkey = SHIFT+DELETE" colspan = 2}
+            }
+            Row {
+              Button parent:CSOSliceInterpolator.apply {title = "Interpolate slices"}
+            }
+            Row {
+              Field parent:CSOManager.groupSingleLabel { title = "Label: " expandX = Yes colspan = 2}
+            }
+            Row {
+              Field parent:CSOManager.groupSinglePathPointWidth { 
+                colspan   = 2
+                expandX   = Yes
+                editField = No
+                slider    = True
+                title     = "Width:"
+              }
+            }
+          }
+        }
+      }
+      TabViewItem Radiomics {
+        Empty {h=10}
+        Field binWidth {title="Bin Width"}
+        Field resampledPixelSpacing {title="Resampled Pixel Spacing"}
+        
+        Table {
+          Row {
+            Button RadiomicsOriginal {title="Original"}
+            Button RadiomicsWavelet {title="Wavelet"}
+          }
+          Row {
+            Button RadiomicsShape {title="Shape"}
+            Button RadiomicsFirstOrder {title="First order"}
+            Button RadiomicsGLCM {title="GLCM"}
+          }
+          Row {
+            Button RadiomicsGLRLM {title="GLRLM"}
+            Button RadiomicsGLSZM {title="GLSZM"}
+            Button RadiomicsNGTDM {title="NGTDM"}
+          }
+          Row {
+            Field ActiveScreen {title = "" expandX = True}
+            Button Start { title = "Start" expandX = True colspan = 2}
+          }
+        }
+        
+        Empty { h = 10 }
+        ListView RadiomicsString {
+          headerTitles    = "No.,Feature Name,Value"
+          rowSeparator    = "@"
+          columnSeparator = ","
+          //sortByColumn    = 0
+          layout          = "l,l,l"
+          selectionMode   = Single
+          richText        = On
+          cellSpacing     = 2
+          rootIsDecorated = Yes
+        }
+        Button StartVoxelBased { title = "Start voxel based" expandX = True}
+        Field parent:ImageSwitch7.currentInput {title = "Overlay - Voxel based radiomic"}
+        Button RadiomicSave { title = "Save" expandX = True}
+        
+      }
+      
+      TabViewItem Export {
+        Field ActiveScreen {title = "Active screen:" expandX = True}
+        Field filename { title = "Filename:" }
+        Button ImageSave { title = "Save" expandX = True}
+      }
+    }
+  }
+}

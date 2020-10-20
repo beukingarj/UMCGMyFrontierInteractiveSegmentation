@@ -1,0 +1,133 @@
+//----------------------------------------------------------------------------------
+//! Macro module MyFrontierInteractiveSegmentation
+/*!
+// \file    MyFrontierInteractiveSegmentation.script
+// \author  Jorn
+// \date    2019-05-21
+//
+// 
+*/
+//----------------------------------------------------------------------------------
+
+
+
+Interface { 
+  Inputs { 
+    #include $(MLAB_MMS_Syngo)/Modules/Macros/FrontierSyngoInterface/FrontierApplicationInputs.script 
+  } 
+  Outputs { 
+    #include $(MLAB_MMS_Syngo)/Modules/Macros/FrontierSyngoInterface/FrontierApplicationOutputs.script 
+    Field viewer2D_reference { internalName = viewer2D_reference.output }
+    Field viewer2D_overlay { internalName = viewer2D_overlay.output }
+    Field viewer2D_fused { internalName = viewer2D_fused.output }
+    Field controlArea { internalName = RemotePanelRendering.outBase }
+  } 
+  Parameters { 
+    #include $(MLAB_MMS_Syngo)/Modules/Macros/FrontierSyngoInterface/FrontierApplicationParameters.script 
+    
+    //Field Modality { type = String }
+    Field wheel { type = Float value = 1}
+    Field wheel_1 { type = Float value = 1}
+    Field wheel_trigger { internalName = SoMouseGrabber.wheel}
+    
+    Field RefSeries { type = Enum
+      items {
+        item Series1 {
+          title = "Series1"
+        }
+        item Series2 {
+          title = "Series2"
+        }
+      }
+      persistent = False
+    }
+  } 
+}
+
+Commands { 
+  source = $(LOCAL)/MyFrontierInteractiveSegmentation.py 
+  
+  FieldListener FrontierSyngoInterface.attached { command = attached } 
+  FieldListener wheel_trigger { command = WheelAdapt}
+  FieldListener controlArea.RegOn {command = RegOn}
+  FieldListener controlArea.ContourOn {command = ContourOn}
+  FieldListener controlArea.DelMethod {command = DelMethodAdapt}
+  FieldListener controlArea.createItem {command = createItem}
+  FieldListener SoView2DCSOExtensibleEditor.isCreatingNewCSO { command = creatingItem}
+  FieldListener controlArea.alphaFactor { command = alphaFactorAdapt}
+  FieldListener CSOManager.groupDisplayTree { command = groupDisplayTreeAdapt}
+  FieldListener CSOManager.numGroups { command = numGroupsAdapt}
+  FieldListener CSOManager.ignoreGroupListViewSelectionChanged { command = ignoreGroupListViewSelectionChangedAdapt}
+  FieldListener CSOManager.numSelectedGroups { command = numSelectedGroupsAdapt}
+  FieldListener CSOManager.ignoreGroupSelectionChanged { command = ignoreGroupSelectionChangedAdapt}
+  FieldListener CSOManager.groupSelectedItems { command = groupSelectedItemsAdapt}
+  FieldListener CSOManager.csoTabSelected { command = csoTabSelectedAdapt}
+  FieldListener CSOManager.groupTabSelected { command = groupTabSelectedAdapt}
+  FieldListener CSOManager.selectionTabSelected { command = selectionTabSelectedAdapt}
+  FieldListener CSOManager.notificationTabSelected { command = notificationTabSelectedAdapt}
+  FieldListener CSOManager.defaultTabSelected { command = defaultTabSelectedAdapt}
+  
+  FieldListener controlArea.groupDisplayTree { command = groupDisplayTreeAdapt1}
+  FieldListener controlArea.numGroups { command = numGroupsAdapt1}
+  FieldListener controlArea.ignoreGroupListViewSelectionChanged { command = ignoreGroupListViewSelectionChangedAdapt1}
+  FieldListener controlArea.numSelectedGroups { command = numSelectedGroupsAdapt1}
+  FieldListener controlArea.ignoreGroupSelectionChanged { command = ignoreGroupSelectionChangedAdapt1}
+  FieldListener controlArea.groupSelectedItems { command = groupSelectedItemsAdapt1}
+  FieldListener controlArea.csoTabSelected { command = csoTabSelectedAdapt1}
+  FieldListener controlArea.groupTabSelected { command = groupTabSelectedAdapt1}
+  FieldListener controlArea.selectionTabSelected { command = selectionTabSelectedAdapt1}
+  FieldListener controlArea.notificationTabSelected { command = notificationTabSelectedAdapt1}
+  FieldListener controlArea.defaultTabSelected { command = defaultTabSelectedAdapt1}
+  
+  FieldListener IntervalThreshold.threshMin { command = PercAdapt}
+  FieldListener IntervalThreshold.threshMax { command = PercAdapt}
+  FieldListener controlArea.PercLB { command = GVAdapt}
+  FieldListener controlArea.PercUB { command = GVAdapt}
+  
+  FieldListener controlArea.ImageSave {command = ImageSaveAdapt}
+  FieldListener controlArea.RadiomicSave {command = RadiomicSaveAdapt}
+  FieldListener controlArea.StartVoxelBased {command = voxelBased}
+  FieldListener controlArea.ActiveScreen {command = ActiveScreenAdapt }
+  FieldListener controlArea.patientBrowser { command = patientBrowser }
+  FieldListener SoView2DRectangle.maskValid   {command = creatingItem}
+  //FieldListener SoMouseGrabber1.maskValid {command = RectAdapt}
+  //FieldListener SoMouseGrabber2.maskValid {command = RectAdapt}
+  FieldListener controlArea.IsoMode {command = IsoModeAdapt}
+  
+  //FieldListener CSOImageStatisticsOverTime.outTimePointStatistics {command = IntervalClamp}
+  //FieldListener FieldBypass2.outputString {command = IntervalClamp}
+  
+  
+  FieldListener controlArea.CalculateIsoRect { command = CalculateIsoRect}
+  
+  //FieldListener IntervalThreshold.threshMin {command = RectAdapt}
+  //FieldListener IntervalThreshold.threshMax {command = RectAdapt}
+  //FieldListener SyncFloat.float1 {command = RectAdapt}
+  //FieldListener SyncFloat1.float1 {command = RectAdapt}
+  
+  FieldListener View2DExtensions2.lut.center {command = LUTAdapt}
+  FieldListener View2DExtensions2.lut.width {command = LUTAdapt}
+  
+  FieldListener SoView2DPosition3.maskValid {command = creatingItem}
+  FieldListener controlArea.drawSize {command = drawSizeAdapt}
+  
+  FieldListener MultiFileVolumeListImageOutput1.outVolIdx {command = settingsRef}
+  FieldListener MultiFileVolumeListImageOutput2.outVolIdx {command = settingsOverlay}
+  
+  FieldListener controlArea.Import {command = ImportNifti}
+  FieldListener controlArea.generateIso {command = generateIsoAdapt}
+  
+  FieldListener SoMenuItem1.selected {command = MenuAdapt}
+  FieldListener SoMenuItem2.selected {command = MenuAdapt}
+  FieldListener SoMenuItem3.selected {command = MenuAdapt}
+  FieldListener SoMenuItem4.selected {command = MenuAdapt}
+  FieldListener SoMenuItem5.selected {command = MenuAdapt}
+  FieldListener SoMenuItem6.selected {command = MenuAdapt}
+  FieldListener SoMenuItem7.selected {command = MenuAdapt}
+  FieldListener SoMenuItem8.selected {command = MenuAdapt}
+  FieldListener SoMenuItem10.selected {command = MenuAdapt}
+  
+  FieldListener controlArea.Start {command = Radiomics}
+  
+  finalizeCommand = finalize 
+}
